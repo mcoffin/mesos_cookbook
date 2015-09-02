@@ -69,6 +69,8 @@ service 'mesos-slave' do
     provider Chef::Provider::Service::Init::Debian
   when 'upstart'
     provider Chef::Provider::Service::Upstart
+  when 'systemd'
+    provider Chef::Provider::Service::Systemd
   end
   supports status: true, restart: true
   subscribes :restart, 'template[mesos-slave-init]'

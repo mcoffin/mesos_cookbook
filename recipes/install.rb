@@ -81,7 +81,11 @@ template 'mesos-master-init' do
   when 'upstart'
     path '/etc/init/mesos-master.conf'
     source 'upstart.erb'
+  when 'systemd'
+    path '/etc/systemd/system/mesos-master.service'
+    source 'systemd.erb'
   end
+  notifies :run, 'execute[systemctl daemon-reload]', :immediately
   variables(name:    'mesos-master',
             wrapper: '/etc/mesos-chef/mesos-master')
 end
@@ -94,7 +98,11 @@ template 'mesos-slave-init' do
   when 'upstart'
     path '/etc/init/mesos-slave.conf'
     source 'upstart.erb'
+  when 'systemd'
+    path '/etc/systemd/system/mesos-slave.service'
+    source 'systemd.erb'
   end
+  notifies :run, 'execute[systemctl daemon-reload]', :immediately
   variables(name:    'mesos-slave',
             wrapper: '/etc/mesos-chef/mesos-slave')
 end
@@ -106,6 +114,8 @@ service 'mesos-master-default' do
     provider Chef::Provider::Service::Init::Debian
   when 'upstart'
     provider Chef::Provider::Service::Upstart
+  when 'systemd'
+    provider Chef::Provider::Service::Systemd
   end
   action [:stop, :disable]
   not_if { node['recipes'].include?('mesos::master') }
@@ -117,6 +127,8 @@ service 'mesos-slave-default' do
     provider Chef::Provider::Service::Init::Debian
   when 'upstart'
     provider Chef::Provider::Service::Upstart
+  when 'systemd'
+    provider Chef::Provider::Service::Systemd
   end
   action [:stop, :disable]
   not_if { node['recipes'].include?('mesos::slave') }
