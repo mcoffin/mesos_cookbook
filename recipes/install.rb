@@ -72,6 +72,12 @@ end
 
 directory '/etc/mesos-chef'
 
+# Systemd reloader
+execute 'systemctl daemon-reload' do
+  command 'systemctl daemon-reload'
+  action :nothing
+end
+
 # Init templates
 template 'mesos-master-init' do
   case node['mesos']['init']
