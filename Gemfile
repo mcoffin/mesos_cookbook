@@ -20,6 +20,7 @@ end
 group :integration do
   gem 'kitchen-ec2'
   gem 'kitchen-vagrant'
+  gem 'kitchen-docker'
   gem 'rake'
   gem 'test-kitchen'
   gem 'vagrant-wrapper'

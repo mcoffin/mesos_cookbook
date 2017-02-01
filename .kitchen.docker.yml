@@ -1,0 +1,74 @@
+---
+driver:
+  name: docker
+  use_sudo: false
+provisioner:
+  name: chef_zero
+  require_chef_omnibus: 12.5.1
+platforms:
+  - name: centos-7
+    driver_config:
+      image: centos/systemd
+      platform: centos
+      privileged: true
+      volume: /sys/fs/cgroup:/sys/fs/cgroup
+      run_command: /usr/sbin/init
+      provision_command: >
+        yum clean all;
+        yum install -y iproute;
+        sed -i.kitchen '/UsePAM/d' /etc/ssh/sshd_config;
+        echo 'UsePrivilegeSeparation no' >> /etc/ssh/sshd_config;
+        echo 'UsePAM no' >> /etc/ssh/sshd_config;
+        systemctl enable sshd.service;
+    attributes:
+      mesos:
+        slave:
+          flags:
+            "systemd_enable_support": false
+    run_list:
+      - recipe[yum]
+  - name: centos-6.8
+    driver_config:
+      image: centos:6.8
+      platform: centos
+      privileged: true
+      run_command: /sbin/init
+      provision_command: >
+        yum clean all;
+        yum install -y iproute
+    run_list:
+      - recipe[yum]
+    attributes:
+      mesos:
+        slave:
+          flags:
+            cgroups_hierarchy: /sys/fs/cgroup
+  - name: ubuntu-16.04
+    run_list: ['recipe[apt]', 'recipe[curl]']
+  - name: ubuntu-15.10
+    run_list: ['recipe[apt]', 'recipe[curl]']
+  - name: ubuntu-14.04
+    run_list: ['recipe[apt]', 'recipe[curl]']
+  - name: ubuntu-12.04 
+    run_list: ['recipe[apt]', 'recipe[curl]']
+suites:
+  - &default
+    name: 1-1-0
+    run_list:
+      - recipe[mesos::master]
+      - recipe[mesos::slave]
+    attributes:
+      mesos:
+        slave:
+          flags:
+            attributes: 'attribute01:value01;attribute02:value02'
+  - <<: *default
+    name: 1-0-1
+    attributes:
+      mesos:
+        version: 1.0.1
+  - <<: *default
+    name: 1-0-0
+    attributes:
+      mesos:
+        version: 1.0.0
